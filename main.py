@@ -1,20 +1,26 @@
+import os
+
 import requests
 
 
-def download_img(url):
+def download_img(url, path_name):
 
     response = requests.get(url)
     response.raise_for_status()
 
-    file_name = 'book.txt'
-    with open(file_name, 'wb') as file:
+    with open(path_name, 'wb') as file:
         file.write(response.content)
 
 
 def main():
-    url = 'https://tululu.org/txt.php?id=32168'
+    os.makedirs('books', exist_ok=True)
 
-    download_img(url)
+    start_id = 3268
+    books_amount = 10
+    for book_id in range(start_id, start_id + books_amount):
+        url = f'https://tululu.org/txt.php?id={book_id}'
+        book_path = os.path.join('books', f'book {book_id}.txt')
+        download_img(url, book_path)
 
 
 if __name__ == '__main__':
