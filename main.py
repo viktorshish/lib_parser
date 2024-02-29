@@ -40,19 +40,24 @@ def pars_book(book_id):
     check_for_redirect(response)
 
     soup = BeautifulSoup(response.text, 'lxml')
+
     title_tag = soup.find('td', class_="ow_px_td").find('h1')
+
     img_tag = soup.find('div', class_="bookimage").find('img')['src']
     img_url = urljoin(url, img_tag)
+
+    comments_tag = soup.find_all('div', class_='texts')
 
     return {
         'title': title_tag.text.split('   ::   ')[0],
         'img_url': img_url,
+        'comments': comments_tag,
     }
 
 
 def main():
-    start_id = 5
-    books_amount = 5
+    start_id = 1
+    books_amount = 10
     for book_id in range(start_id, start_id + books_amount):
         url = 'https://tululu.org/txt.php'
         # TODO: Сделать одну общуюю ссылку(уменьшить количество запросов)
@@ -60,9 +65,19 @@ def main():
 
         try:
             book = pars_book(book_id)
+
             title = book['title']
+
             download_txt(url, params, f'{book_id}. {title}', folder='books/')
-            print(f'Заголовок: {book['title']}\n')
+
+            print(f'Заголовок: {book['title']}')
+            if book['comments']:
+                for comment in book['comments']:
+                    comment = comment.find('span').text
+                    print(comment)
+            else:
+                print('Без комментариев')
+            print()
 
             filename = urlparse(book['img_url']).path.split('/')[-1]
             dowload_img(book['img_url'], filename, folder='images/')
