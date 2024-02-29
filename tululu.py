@@ -64,12 +64,7 @@ def pars_book_page(response, url):
 @click.argument('id', type=click.INT)
 @click.argument('count', type=click.INT)
 def main(id, count):
-    """Скрипт скачивает заданное количество книг с сайта tululu.org.
-
-        id (int): ID книги с которой начнется скачиваение книг.
-
-        count (int): Количество скачиваемых книг.
-    """
+    """Скрипт скачивает заданное количество книг с сайта tululu.org."""
     for book_id in range(id, id + count):
         url = f'https://tululu.org/b{book_id}/'
         txt_url = 'https://tululu.org/txt.php'
