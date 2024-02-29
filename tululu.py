@@ -2,6 +2,7 @@ import os
 from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
+import click
 import requests
 from pathvalidate import sanitize_filename
 
@@ -59,11 +60,17 @@ def pars_book_page(response, url):
         'img_url': urljoin(url, img_tag),
     }
 
+@click.command()
+@click.argument('id', type=click.INT)
+@click.argument('count', type=click.INT)
+def main(id, count):
+    """Скрипт скачивает заданное количество книг с сайта tululu.org.
 
-def main():
-    start_id = 1
-    books_amount = 10
-    for book_id in range(start_id, start_id + books_amount):
+        id (int): ID книги с которой начнется скачиваение книг.
+
+        count (int): Количество скачиваемых книг.
+    """
+    for book_id in range(id, id + count):
         url = f'https://tululu.org/b{book_id}/'
         txt_url = 'https://tululu.org/txt.php'
         params = {"id": book_id}
