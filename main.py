@@ -11,6 +11,16 @@ def check_for_redirect(response):
         raise requests.exceptions.HTTPError
 
 
+def dowload_img(img_url, filename, folder='img/'):
+    response = requests.get(img_url)
+    response.raise_for_status()
+
+    os.makedirs(folder, exist_ok=True)
+    filepath = os.path.join(folder, filename)
+    with open(filepath, 'wb') as file:
+        file.write(response.content)
+
+
 def download_txt(url, params, filename, folder='books/'):
     response = requests.get(url, params=params)
     response.raise_for_status()
@@ -23,39 +33,30 @@ def download_txt(url, params, filename, folder='books/'):
         file.write(response.text)
 
 
-def dowload_img(img_url, filename, folder='img/'):
-    response = requests.get(img_url)
+def get_book_response(url):
+    response = requests.get(url)
     response.raise_for_status()
 
-    os.makedirs(folder, exist_ok=True)
-    filepath = os.path.join(folder, filename)
-    with open(filepath, 'wb') as file:
-        file.write(response.content)
-
-
-def pars_book(book_id):
-    url = f'https://tululu.org/b{book_id}/'
-
-    response = requests.get(url)
     check_for_redirect(response)
+    return response
 
+
+def pars_book_page(response, url):
     soup = BeautifulSoup(response.text, 'lxml')
 
     title_tag = soup.find('td', class_="ow_px_td").find('h1')
 
-    img_tag = soup.find('div', class_="bookimage").find('img')['src']
-    img_url = urljoin(url, img_tag)
+    genres_tag = soup.find('span', class_='d_book').find_all('a')
 
     comments_tag = soup.find_all('div', class_='texts')
 
-    genres_tag = soup.find('span', class_='d_book').find_all('a')
-    genres = [tag.text for tag in genres_tag]
-
+    img_tag = soup.find('div', class_="bookimage").find('img')['src']
     return {
         'title': title_tag.text.split('   ::   ')[0],
-        'img_url': img_url,
+        'author': title_tag.text.split('   ::   ')[1],
+        'genres': [tag.text for tag in genres_tag],
         'comments': comments_tag,
-        'genres': genres
+        'img_url': urljoin(url, img_tag),
     }
 
 
@@ -63,31 +64,30 @@ def main():
     start_id = 1
     books_amount = 10
     for book_id in range(start_id, start_id + books_amount):
-        url = 'https://tululu.org/txt.php'
-        # TODO: Сделать одну общуюю ссылку(уменьшить количество запросов)
+        url = f'https://tululu.org/b{book_id}/'
+        txt_url = 'https://tululu.org/txt.php'
         params = {"id": book_id}
 
         try:
-            book = pars_book(book_id)
+            book_response = get_book_response(url)
+            book = pars_book_page(book_response, url)
 
-            download_txt(url, params, f'{book_id}. {book['title']}', folder='books/')
+            download_txt(txt_url, params, f'{book_id}. {book['title']}', folder='books/')
 
             print(f'Заголовок: {book['title']}')
-            print(book['genres'])
-            if book['comments']:
-                for comment in book['comments']:
-                    comment = comment.find('span').text
-                    print(comment)
+            print(f'Автор: {book['author']}')
+            print(f'Жанры: {book['genres']}')
+            comments = [comment.find('span').text for comment in book['comments']]
+            if comments:
+                print(f'Комментарии: {comments} \n')
             else:
-                print('Без комментариев')
-
-            print()
+                print('Без комментариев \n')
 
             filename = urlparse(book['img_url']).path.split('/')[-1]
             dowload_img(book['img_url'], filename, folder='images/')
 
         except requests.exceptions.HTTPError:
-            print(f'Не удалось загрузить книгу с ID {book_id}:\n')
+            print(f'Не удалось загрузить книгу с ID {book_id}\n')
 
 
 if __name__ == '__main__':
