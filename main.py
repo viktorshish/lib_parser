@@ -1,4 +1,5 @@
 import os
+from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 import requests
@@ -22,12 +23,21 @@ def download_txt(url, params, filename, folder='books/'):
         file.write(response.content)
 
 
-def pars_book_title(book_id):
+def pars_book(book_id):
     url = f'https://tululu.org/b{book_id}/'
+
     response = requests.get(url)
+    check_for_redirect(response)
+
     soup = BeautifulSoup(response.text, 'lxml')
     title_tag = soup.find('td', class_="ow_px_td").find('h1')
-    return title_tag.text.split('   ::   ')
+    img_tag = soup.find('div', class_="bookimage").find('img')['src']
+    img_url = urljoin(url, img_tag)
+
+    return {
+        'title': title_tag.text.split('   ::   ')[0],
+        'img_url': img_url,
+    }
 
 
 def main():
@@ -35,12 +45,18 @@ def main():
     books_amount = 10
     for book_id in range(start_id, start_id + books_amount):
         url = 'https://tululu.org/txt.php'
+        # TODO: Сделать одну общуюю ссылку(уменьшить количество запросов)
         params = {"id": book_id}
-        title = pars_book_title(book_id)
+
         try:
-            download_txt(url, params, f'{book_id}.{title[0]}', folder='books')
+            book = pars_book(book_id)
+            title = book['title']
+            download_txt(url, params, f'{book_id}. {title}', folder='books')
+            print(f'Заголовок: {book['title']}')
+            print(book['img_url'], '\n')
+
         except requests.exceptions.HTTPError:
-            print(f'Не удалось загрузить книгу с ID {book_id}:')
+            print(f'Не удалось загрузить книгу с ID {book_id}:\n')
 
 
 if __name__ == '__main__':
