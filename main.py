@@ -48,10 +48,14 @@ def pars_book(book_id):
 
     comments_tag = soup.find_all('div', class_='texts')
 
+    genres_tag = soup.find('span', class_='d_book').find_all('a')
+    genres = [tag.text for tag in genres_tag]
+
     return {
         'title': title_tag.text.split('   ::   ')[0],
         'img_url': img_url,
         'comments': comments_tag,
+        'genres': genres
     }
 
 
@@ -66,17 +70,17 @@ def main():
         try:
             book = pars_book(book_id)
 
-            title = book['title']
-
-            download_txt(url, params, f'{book_id}. {title}', folder='books/')
+            download_txt(url, params, f'{book_id}. {book['title']}', folder='books/')
 
             print(f'Заголовок: {book['title']}')
+            print(book['genres'])
             if book['comments']:
                 for comment in book['comments']:
                     comment = comment.find('span').text
                     print(comment)
             else:
                 print('Без комментариев')
+
             print()
 
             filename = urlparse(book['img_url']).path.split('/')[-1]
