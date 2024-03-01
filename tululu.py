@@ -10,7 +10,7 @@ from pathvalidate import sanitize_filename
 
 def check_for_redirect(response):
     if response.history:
-        raise requests.exceptions.HTTPError
+        raise requests.HTTPError
 
 
 def dowload_img(img_url, filename, folder='img/'):
@@ -89,10 +89,10 @@ def main(start_id, count):
 
             filename = urlparse(book['img_url']).path.split('/')[-1]
             dowload_img(book['img_url'], filename, folder='images/')
-        except requests.exceptions.ConnectionError:
-            print('Произошел обрыв соединения')
+        except requests.ConnectionError as e:
+            print('Произошел обрыв соединения ', str(e))
             time.sleep(5)
-        except requests.exceptions.HTTPError:
+        except requests.HTTPError:
             print(f'Не удалось загрузить книгу с ID {book_id}\n')
 
 
