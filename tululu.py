@@ -1,4 +1,5 @@
 import os
+import time
 from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
@@ -88,7 +89,9 @@ def main(start_id, count):
 
             filename = urlparse(book['img_url']).path.split('/')[-1]
             dowload_img(book['img_url'], filename, folder='images/')
-
+        except requests.exceptions.ConnectionError:
+            print('Произошел обрыв соединения')
+            time.sleep(5)
         except requests.exceptions.HTTPError:
             print(f'Не удалось загрузить книгу с ID {book_id}\n')
 
