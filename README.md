@@ -30,10 +30,10 @@ pip install -r requirements.txt
 Для запуска скрипта:
 
 ```bash
-python tululu.py ID COUNT
+python tululu.py START_ID COUNT
 ```
 где: 
     
-**ID** - ID книги (число), с которой начнется скачивание книг
+**START_ID** - ID книги (число), с которой начнется скачивание книг
 
 **COUNT** - Количество скачиваемых книг
