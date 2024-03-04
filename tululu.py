@@ -43,7 +43,7 @@ def get_book_response(url):
     return response
 
 
-def parsing_book_page(response, url):
+def get_book_page(response, url):
     soup = BeautifulSoup(response.text, 'lxml')
 
     title_tag = soup.find('td', class_="ow_px_td").find('h1')
@@ -74,7 +74,7 @@ def main(start_id, count):
 
         try:
             book_response = get_book_response(url)
-            book = parsing_book_page(book_response, url)
+            book = get_book_page(book_response, url)
 
             download_txt(txt_url, params, f'{book_id}. {book['title']}', folder='books/')
 
