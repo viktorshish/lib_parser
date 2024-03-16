@@ -88,7 +88,7 @@ def main(start_id, count):
                 print('Без комментариев \n')
 
             filename = urlparse(book['img_url']).path.split('/')[-1]
-            dowload_img(book['img_url'], filename, folder='images/')
+            dowload_img(book['img_url'], filename)
         except requests.ConnectionError as e:
             print('Произошел обрыв соединения ', str(e))
             time.sleep(5)
